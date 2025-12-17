@@ -180,7 +180,7 @@ function processGuess(who, guess) {
 
 function computerGuess() {
   const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(()=>processGuess("컴퓨터", guess), 600);
+  setTimeout(()=>processGuess("컴퓨터", guess), 1000);
 }
 
 document.getElementById("submitBtn").onclick = () => {
