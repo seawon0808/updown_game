@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Up Down 게임 (최적 전략)</title>
+<title>Up Down 게임 (최종 안정판)</title>
 <style>
 body {
   font-family: system-ui, sans-serif;
@@ -79,11 +79,23 @@ button {
 </div>
 
 <script>
-const KEY = "updown_optimal_v2";
+const KEY = "updown_optimal_v1";
+
+/* ---------- 데이터 로드 ---------- */
+function load() {
+  const saved = localStorage.getItem(KEY);
+  if (saved) return JSON.parse(saved);
+  return {
+    playerScore: 0,
+    computerScore: 0,
+    games: [],
+    round: newRound()
+  };
+}
 
 function newRound() {
   return {
-    answer: Math.floor(Math.random()*100) + 1,
+    answer: Math.floor(Math.random()*100)+1,
     low: 1,
     high: 100,
     turn: 0,
@@ -93,22 +105,14 @@ function newRound() {
   };
 }
 
-function loadData() {
-  return JSON.parse(localStorage.getItem(KEY)) || {
-    playerScore: 0,
-    computerScore: 0,
-    games: [],
-    round: newRound()
-  };
-}
+let data = load();
 
-let data = loadData();
-
+/* ---------- 안전 저장 ---------- */
 function save() {
-  // 항상 최신 상태 기준으로 저장
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
+/* ---------- UI ---------- */
 function updateUI(msg="") {
   document.getElementById("pscore").textContent = data.playerScore;
   document.getElementById("cscore").textContent = data.computerScore;
@@ -118,12 +122,13 @@ function updateUI(msg="") {
   document.getElementById("message").textContent = msg;
 
   document.getElementById("roundLog").innerHTML =
-    data.round.log.map(x => `<div>${x}</div>`).join("");
+    data.round.log.map(x=>`<div>${x}</div>`).join("");
 
   document.getElementById("gameLog").innerHTML =
-    data.games.map((g,i) => `<div>게임 ${i+1}: ${g}</div>`).join("");
+    data.games.map((g,i)=>`<div>게임 ${i+1}: ${g}</div>`).join("");
 }
 
+/* ---------- 게임 로직 ---------- */
 function endGame(winner) {
   if (winner === "사용자") data.playerScore++;
   else data.computerScore++;
@@ -134,7 +139,7 @@ function endGame(winner) {
 
   data.round.over = true;
   save();
-  updateUI(`🎉 ${winner} 정답! 정답은 ${data.round.answer}`);
+  updateUI(`🎉 ${winner} 정답!`);
 
   setTimeout(() => {
     data.round = newRound();
@@ -174,27 +179,24 @@ function processGuess(who, guess) {
 }
 
 function computerGuess() {
-  if (data.round.over) return;
   const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(() => processGuess("컴퓨터", guess), 600);
+  setTimeout(()=>processGuess("컴퓨터", guess), 600);
 }
 
 document.getElementById("submitBtn").onclick = () => {
-  if (!data.round.playerTurn || data.round.over) return;
+  if (!data.round.playerTurn) return;
+  const num = Number(guessInput.value);
+  guessInput.value = "";
 
-  const num = Number(document.getElementById("guessInput").value);
-  document.getElementById("guessInput").value = "";
-
-  if (!Number.isInteger(num) || num < 1 || num > 100) {
-    updateUI("❗ 1~100 사이의 정수를 입력하세요");
+  if (!Number.isInteger(num) || num<1 || num>100) {
+    updateUI("❗ 1~100 사이 숫자만 입력");
     return;
   }
-
   processGuess("사용자", num);
 };
 
-/* 🔥 핵심: 다른 창과 실시간 동기화 */
-window.addEventListener("storage", (e) => {
+/* ---------- 멀티 창 동기화 ---------- */
+window.addEventListener("storage", e => {
   if (e.key === KEY && e.newValue) {
     data = JSON.parse(e.newValue);
     updateUI("🔄 다른 창과 동기화됨");
