@@ -29,9 +29,6 @@ button {
   background:#fafafa;
   cursor:pointer;
 }
-button:disabled {
-  opacity:.4;
-}
 .box {
   background:#f1f1f1;
   padding:8px;
@@ -82,7 +79,7 @@ button:disabled {
 </div>
 
 <script>
-const KEY = "updown_optimal_v1";
+const KEY = "updown_optimal_v2";
 
 function newRound() {
   return {
@@ -96,14 +93,19 @@ function newRound() {
   };
 }
 
-let data = JSON.parse(localStorage.getItem(KEY)) || {
-  playerScore: 0,
-  computerScore: 0,
-  games: [],
-  round: newRound()
-};
+function loadData() {
+  return JSON.parse(localStorage.getItem(KEY)) || {
+    playerScore: 0,
+    computerScore: 0,
+    games: [],
+    round: newRound()
+  };
+}
+
+let data = loadData();
 
 function save() {
+  // 항상 최신 상태 기준으로 저장
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
@@ -174,7 +176,7 @@ function processGuess(who, guess) {
 function computerGuess() {
   if (data.round.over) return;
   const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(() => processGuess("컴퓨터", guess), 700);
+  setTimeout(() => processGuess("컴퓨터", guess), 600);
 }
 
 document.getElementById("submitBtn").onclick = () => {
@@ -190,6 +192,14 @@ document.getElementById("submitBtn").onclick = () => {
 
   processGuess("사용자", num);
 };
+
+/* 🔥 핵심: 다른 창과 실시간 동기화 */
+window.addEventListener("storage", (e) => {
+  if (e.key === KEY && e.newValue) {
+    data = JSON.parse(e.newValue);
+    updateUI("🔄 다른 창과 동기화됨");
+  }
+});
 
 updateUI("게임 시작!");
 </script>
