@@ -59,7 +59,7 @@ button {
   <div class="score">
     <b id="pscore">0</b> : <b id="cscore">0</b>
   </div>
-  <div class="small">사용자 : 컴퓨터</div>
+  <div class="small">보정고 : 컴퓨터</div>
 
   <div style="margin-top:8px">
     현재 차례: <b id="turnPlayer"></b>
@@ -117,7 +117,7 @@ function updateUI(msg="") {
   document.getElementById("pscore").textContent = data.playerScore;
   document.getElementById("cscore").textContent = data.computerScore;
   document.getElementById("turnPlayer").textContent =
-    data.round.playerTurn ? "사용자" : "컴퓨터";
+    data.round.playerTurn ? "보정고" : "컴퓨터";
   document.getElementById("turnCount").textContent = data.round.turn;
   document.getElementById("message").textContent = msg;
 
@@ -130,7 +130,7 @@ function updateUI(msg="") {
 
 /* ---------- 게임 로직 ---------- */
 function endGame(winner) {
-  if (winner === "사용자") data.playerScore++;
+  if (winner === "보정고") data.playerScore++;
   else data.computerScore++;
 
   data.games.unshift(
@@ -192,14 +192,14 @@ document.getElementById("submitBtn").onclick = () => {
     updateUI("❗ 1~100 사이 숫자만 입력");
     return;
   }
-  processGuess("사용자", num);
+  processGuess("보정고", num);
 };
 
 /* ---------- 멀티 창 동기화 ---------- */
 window.addEventListener("storage", e => {
   if (e.key === KEY && e.newValue) {
     data = JSON.parse(e.newValue);
-    updateUI("🔄 다른 창과 동기화됨");
+    <!--updateUI("🔄 다른 창과 동기화됨");-->
   }
 });
 
