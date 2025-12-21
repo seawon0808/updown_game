@@ -3,152 +3,77 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Up Down 게임 (최종 안정판)</title>
+<title>Up Down 게임 — 안정판</title>
 <style>
   :root{
     --bg:#f6f7fb;
-    --card:#ffffff;
+    --card:#fff;
     --muted:#666;
-    --accent:#1363df;
   }
-
-  html,body{height:100%}
+  html,body{height:100%;margin:0}
   body{
-    margin:0;
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR","Helvetica Neue",Arial;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans KR",Arial;
     background:var(--bg);
     padding:28px;
     color:#111;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
   }
 
   .container{
-    max-width:1300px;           /* wider */
+    max-width:1300px;
     margin:0 auto;
     background:var(--card);
     padding:28px;
     border-radius:14px;
-    box-shadow:0 20px 40px rgba(12,20,40,0.06);
+    box-shadow:0 20px 40px rgba(0,0,0,0.06);
   }
 
   h2{margin:0 0 12px 0}
 
-  /* grid: left game, right logs */
   .grid{
     display:grid;
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns:1.15fr 1fr;
     gap:28px;
     align-items:start;
   }
 
-  /* Left column */
-  .game{display:flex;flex-direction:column;gap:12px}
-
-  /* Scoreboard block */
-  .score-row{
-    display:flex;
-    align-items:center;
-    gap:18px;
-    flex-wrap:wrap;
-  }
-
-  .score-box{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-
-  .score{
-    font-size:56px;           /* much bigger */
-    font-weight:900;
-    letter-spacing:0.6px;
-  }
-
-  .vs{
-    font-size:20px;
-    color:var(--muted);
-    font-weight:700;
-  }
-
-  .label{
-    font-size:22px;           /* label larger */
-    font-weight:800;
-    color:var(--muted);
-  }
-
-  .meta-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:16px;color:var(--muted)}
-
-  /* message */
-  .box{
-    background:#f1f1f1;
-    padding:14px;
-    border-radius:10px;
-    min-height:44px;
-    display:flex;
-    align-items:center;
-    font-size:16px;
-  }
-
-  /* input & button */
-  .controls{display:flex;gap:10px;flex-direction:column}
-  input[type="text"], button{
-    box-sizing:border-box;
-    width:100%;
-    padding:14px;
-    font-size:18px;
-    border-radius:10px;
-    border:1px solid #d6d6d6;
-  }
-
-  /* remove spinner reliability: using text input */
-  input[type="text"]{-webkit-appearance:none;appearance:none}
-  input[type="text"]::placeholder{color:#999}
-
-  button{
-    background:#fafafa;
-    cursor:pointer;
-    font-weight:700;
-  }
-  button:disabled{opacity:0.6;cursor:not-allowed}
-
-  /* logs column */
-  .logs{display:flex;flex-direction:column;gap:12px}
-  .log{
-    background:#fafafa;
-    padding:12px;
-    border-radius:10px;
-    max-height:420px;
-    overflow:auto;
-    font-size:15px;
-    white-space:pre-wrap;
-    border:1px solid #efefef;
-  }
-
-  /* responsive */
   @media (max-width:900px){
     .grid{grid-template-columns:1fr}
-    .score{font-size:42px}
-    .label{font-size:18px}
   }
 
-  /* subtle focus */
+  .score-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .score{font-size:56px;font-weight:900;letter-spacing:0.5px}
+  .label{font-size:22px;font-weight:800;color:var(--muted)}
+  .meta{display:flex;gap:16px;margin-top:6px;color:var(--muted);font-size:16px}
+
+  .box{background:#f1f1f1;padding:14px;border-radius:10px;min-height:44px;display:flex;align-items:center;font-size:16px}
+
+  .controls{display:flex;flex-direction:column;gap:10px}
+  input[type="text"], button{
+    box-sizing:border-box;padding:14px;font-size:18px;border-radius:10px;border:1px solid #d6d6d6;width:100%;
+  }
+  input[type="text"]{-webkit-appearance:none;appearance:none}
+  input[type="text"]::placeholder{color:#999}
+  button{background:#fafafa;cursor:pointer;font-weight:700}
+  button:disabled{opacity:0.6;cursor:not-allowed}
+
+  .logs{display:flex;flex-direction:column;gap:12px}
+  .log{background:#fafafa;padding:12px;border-radius:10px;max-height:420px;overflow:auto;font-size:15px;white-space:pre-wrap;border:1px solid #efefef}
+
   input:focus, button:focus{outline:3px solid rgba(19,99,223,0.12);outline-offset:2px}
 </style>
 </head>
 <body>
   <div class="container">
     <h2>Up Down 게임 (1~100)</h2>
+
     <div class="grid">
-      <!-- LEFT: Game -->
+      <!-- LEFT -->
       <div class="game">
         <div class="score-row">
-          <div class="score-box">
-            <div class="score"><span id="pscore">0</span> : <span id="cscore">0</span></div>
-          </div>
+          <div class="score"><span id="pscore">0</span> : <span id="cscore">0</span></div>
           <div>
             <div class="label">보정고 : 컴퓨터</div>
-            <div class="meta-row" style="margin-top:6px">
+            <div class="meta">
               <div>현재 차례: <strong id="turnPlayer"></strong></div>
               <div>턴 수: <strong id="turnCount">0</strong></div>
             </div>
@@ -158,13 +83,13 @@
         <div id="message" class="box" aria-live="polite">게임 시작!</div>
 
         <div class="controls" style="margin-top:6px">
-          <!-- use text to reliably remove spinner; inputmode keeps numeric keys on mobile -->
+          <!-- use text to remove spinners; inputmode keeps numeric keyboard on mobile -->
           <input id="guessInput" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="1~100 입력" aria-label="숫자 입력 (1~100)">
           <button id="submitBtn" type="button">확인</button>
         </div>
       </div>
 
-      <!-- RIGHT: Logs -->
+      <!-- RIGHT -->
       <div class="logs">
         <div>
           <h4 style="margin:8px 0">📜 현재 게임 로그</h4>
@@ -180,189 +105,207 @@
   </div>
 
 <script>
-  const POST_RESULT_DELAY = 2000; // 2 seconds
-  
-  const KEY = "updown_optimal_v1";
+/* ---------- CONFIG ---------- */
+const STORAGE_KEY = "updown_optimal_v1";
+const POST_RESULT_DELAY = 2000;      // 2 seconds to read the result
+const COMPUTER_THINK_DELAY = 800;    // computer "thinking" animation
 
-  // DOM refs
-  const pscore = document.getElementById('pscore');
-  const cscore = document.getElementById('cscore');
-  const turnPlayer = document.getElementById('turnPlayer');
-  const turnCount = document.getElementById('turnCount');
-  const message = document.getElementById('message');
-  const guessInput = document.getElementById('guessInput');
-  const submitBtn = document.getElementById('submitBtn');
-  const roundLog = document.getElementById('roundLog');
-  const gameLog = document.getElementById('gameLog');
+/* ---------- DOM REFS ---------- */
+const el = id => document.getElementById(id);
+const pscore = el('pscore');
+const cscore = el('cscore');
+const turnPlayer = el('turnPlayer');
+const turnCount = el('turnCount');
+const message = el('message');
+const guessInput = el('guessInput');
+const submitBtn = el('submitBtn');
+const roundLog = el('roundLog');
+const gameLog = el('gameLog');
 
-  // data helpers
-  function newRound(){
-    return {
-      answer: Math.floor(Math.random()*100)+1,
-      low:1, high:100,
-      turn:0,
-      playerTurn:true,
-      log:[],
-      over:false
-    };
+/* ---------- UTILITIES ---------- */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- GAME DATA ---------- */
+function newRound(){
+  return { answer: Math.floor(Math.random()*100)+1, low:1, high:100, turn:0, playerTurn:true, log:[], over:false };
+}
+
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try { return JSON.parse(raw); } catch(e){ console.warn("Storage parse failed, reset."); }
   }
+  return { playerScore:0, computerScore:0, games:[], round:newRound() };
+}
 
-  function load(){
-    const raw = localStorage.getItem(KEY);
-    if(raw){
-      try{return JSON.parse(raw);}catch(e){console.warn('parse err, resetting');}
+let data = load();
+let countdownInterval = null;
+
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+/* ---------- RENDER ---------- */
+function render(msg){
+  pscore.textContent = data.playerScore;
+  cscore.textContent = data.computerScore;
+  turnPlayer.textContent = data.round.playerTurn ? "보정고" : "컴퓨터";
+  turnCount.textContent = data.round.turn;
+  if(typeof msg === 'string' && msg !== "") message.textContent = msg;
+
+  roundLog.innerHTML = data.round.log.map(line => `<div>${escapeHtml(line)}</div>`).join('');
+  gameLog.innerHTML = data.games.map((g,i) => `<div>게임 ${i+1}: ${escapeHtml(g)}</div>`).join('');
+
+  // disable inputs while round is over (end-game countdown)
+  const disabled = !!data.round.over;
+  guessInput.disabled = disabled;
+  submitBtn.disabled = disabled;
+}
+
+/* ---------- END GAME ---------- */
+function endGame(winner){
+  if(winner === "보정고") data.playerScore++; else data.computerScore++;
+  data.games.unshift(`${winner} 승 (정답 ${data.round.answer}, ${data.round.turn}턴)`);
+  data.round.over = true;
+  save();
+
+  // 5 second countdown display
+  let remaining = 5;
+  render(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
+  if(countdownInterval) clearInterval(countdownInterval);
+  countdownInterval = setInterval(()=>{
+    remaining--;
+    if(remaining > 0){
+      render(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
+    } else {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      data.round = newRound();
+      save();
+      render("새 게임 시작!");
     }
-    return {playerScore:0, computerScore:0, games:[], round: newRound()};
+  }, 1000);
+}
+
+/* ---------- PROCESS GUESS ----------
+   Shows result immediately, then waits POST_RESULT_DELAY before switching turn
+   and calling computerGuess() if needed. Inputs are locked during the read period.
+*/
+function processGuess(who, guess) {
+  if (data.round.over) return;
+
+  data.round.turn++;
+  let result;
+
+  if (guess < data.round.answer) {
+    result = "UP";
+    data.round.low = Math.max(data.round.low, guess + 1);
+  } else if (guess > data.round.answer) {
+    result = "DOWN";
+    data.round.high = Math.min(data.round.high, guess - 1);
+  } else {
+    result = "CORRECT";
   }
 
-  let data = load();
-  let countdownTimer = null;
+  data.round.log.unshift(`${who}: ${guess} → ${result}`);
+  save();
 
-  function save(){ localStorage.setItem(KEY, JSON.stringify(data)); }
+  // Show result immediately so user can read it
+  render(`${who}: ${guess} → ${result}`);
 
-  function render(msg = ""){
-    pscore.textContent = data.playerScore;
-    cscore.textContent = data.computerScore;
-    turnPlayer.textContent = data.round.playerTurn ? "보정고" : "컴퓨터";
-    turnCount.textContent = data.round.turn;
-    if(msg !== "") message.textContent = msg;
+  // If correct, end the round (endGame handles countdown and disables input)
+  if (result === "CORRECT") {
+    endGame(who);
+    return;
+  }
 
-    roundLog.innerHTML = data.round.log.map(line => `<div>${escapeHtml(line)}</div>`).join('');
-    gameLog.innerHTML = data.games.map((g,i)=>`<div>게임 ${i+1}: ${escapeHtml(g)}</div>`).join('');
+  // Lock inputs for reading period
+  guessInput.disabled = true;
+  submitBtn.disabled = true;
 
+  // After read delay, switch turn and continue
+  setTimeout(() => {
+    data.round.playerTurn = !data.round.playerTurn;
+    // Re-enable only if round is not over
     guessInput.disabled = !!data.round.over;
     submitBtn.disabled = !!data.round.over;
-  }
-
-  // small utility to avoid xss when showing logs (keeps text-only)
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, function(m){ return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
-  }
-
-  // end game with visible 5-second countdown
-  function endGame(winner){
-    if(winner === "보정고") data.playerScore++; else data.computerScore++;
-    data.games.unshift(`${winner} 승 (정답 ${data.round.answer}, ${data.round.turn}턴)`);
-    data.round.over = true;
     save();
+    render(); // no new message, just full UI update
 
-    let remaining = 5;
-    render(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
-    if(countdownTimer) clearInterval(countdownTimer);
-    countdownTimer = setInterval(()=>{
-      remaining--;
-      if(remaining > 0){
-        render(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
-      } else {
-        clearInterval(countdownTimer);
-        countdownTimer = null;
-        data.round = newRound();
-        save();
-        render("새 게임 시작!");
-      }
-    }, 1000);
-  }
-
-  function processGuess(who, guess) {
-    if (data.round.over) return;
-  
-    data.round.turn++;
-    let result;
-  
-    if (guess < data.round.answer) {
-      result = "UP";
-      data.round.low = Math.max(data.round.low, guess + 1);
-    } else if (guess > data.round.answer) {
-      result = "DOWN";
-      data.round.high = Math.min(data.round.high, guess - 1);
-    } else {
-      result = "CORRECT";
+    if (!data.round.playerTurn && !data.round.over) {
+      // computer's turn immediately calls the computer thinking delay
+      computerGuess();
     }
-  
-    data.round.log.unshift(`${who}: ${guess} → ${result}`);
-    save();
-  
-    // ✅ SHOW RESULT IMMEDIATELY
-    updateUI(`${who}: ${guess} → ${result}`);
-  
-    if (result === "CORRECT") {
-      endGame(who);
-      return;
-    }
-  
-    // 🔒 lock input during reading time
-    guessInput.disabled = true;
-    submitBtn.disabled = true;
-  
-    // ✅ TRUE 2-SECOND WAIT AFTER RESULT
-    setTimeout(() => {
-      data.round.playerTurn = !data.round.playerTurn;
-      guessInput.disabled = false;
-      submitBtn.disabled = false;
-  
-      save();
-      updateUI();
-  
-      if (!data.round.playerTurn) {
-        computerGuess();
-      }
-    }, 2000);
-  }
+  }, POST_RESULT_DELAY);
+}
 
+/* ---------- COMPUTER GUESS ---------- */
+function computerGuess() {
+  // safety: ensure valid range
+  if (data.round.low > data.round.high) { data.round.low = 1; data.round.high = 100; }
 
+  const guess = Math.floor((data.round.low + data.round.high) / 2);
+  // computer "thinks" then its guess is processed (processGuess will show result and lock 2s)
+  setTimeout(() => processGuess("컴퓨터", guess), COMPUTER_THINK_DELAY);
+}
 
-  function computerGuess() {
-    const guess = Math.floor((data.round.low + data.round.high) / 2);
-    setTimeout(() => processGuess("컴퓨터", guess), 800);
-  }
+/* ---------- INPUT SUBMISSION ---------- */
+function handleSubmit(){
+  // only allow when it's player's turn and round not over
+  if (!data.round.playerTurn || data.round.over) return;
 
+  const raw = String(guessInput.value || "").trim();
+  // quick validation
+  if (raw === "") { render("❗ 1~100 사이 숫자만 입력"); return; }
 
-  // submit handler (parses input safely)
-  function handleSubmit(){
-    if(!data.round.playerTurn || data.round.over) return;
-    const raw = guessInput.value.trim();
-    // allow empty -> rejects
-    // parse as integer (decimal allowed but must be integer)
-    if(raw === "") { render("❗ 1~100 사이 숫자만 입력"); return; }
-    const n = Number(raw);
-    // disallow non-integer / NaN
-    if(!Number.isInteger(n) || n < 1 || n > 100){
-      render("❗ 1~100 사이 숫자만 입력");
-      guessInput.value = "";
-      return;
-    }
+  // parse integer (allow "007" etc). Use Number then Number.isInteger
+  const n = Number(raw);
+  // reject NaN, non-integer, out-of-range
+  if (!Number.isInteger(n) || n < 1 || n > 100) {
+    render("❗ 1~100 사이 숫자만 입력");
     guessInput.value = "";
-    processGuess("보정고", n);
+    return;
   }
 
-  submitBtn.addEventListener('click', handleSubmit);
+  // clear the input immediately (nice UX)
+  guessInput.value = "";
+  // Directly process the player's guess; processGuess handles locking & delay
+  processGuess("보정고", n);
+}
 
-  // Enter key on input submits
-  guessInput.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      handleSubmit();
+/* ---------- EVENTS ---------- */
+submitBtn.addEventListener('click', handleSubmit);
+
+// Enter key in input should submit
+guessInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleSubmit();
+  }
+});
+
+// support Enter on focused button as well
+submitBtn.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    handleSubmit();
+  }
+});
+
+/* ---------- MULTI-TAB SYNC ---------- */
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY && e.newValue) {
+    try {
+      data = JSON.parse(e.newValue);
+      render("🔄 다른 창과 동기화됨");
+    } catch (err) {
+      console.warn('storage parse failed');
     }
-  });
+  }
+});
 
-  // Enter on the button too
-  submitBtn.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      handleSubmit();
-    }
-  });
-
-  // multi-tab sync
-  window.addEventListener('storage', (e) => {
-    if(e.key === KEY && e.newValue){
-      try{ data = JSON.parse(e.newValue); render("🔄 다른 창과 동기화됨"); }
-      catch(err){ console.warn('storage parse fail'); }
-    }
-  });
-
-  // initial render
-  render("게임 시작!");
+/* ---------- INITIAL RENDER ---------- */
+render("게임 시작!");
 </script>
 </body>
 </html>
