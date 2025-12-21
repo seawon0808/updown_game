@@ -180,6 +180,8 @@
   </div>
 
 <script>
+  const POST_RESULT_DELAY = 2000; // 2 seconds
+  
   const KEY = "updown_optimal_v1";
 
   // DOM refs
@@ -261,33 +263,49 @@
     }, 1000);
   }
 
-  function processGuess(who, guess){
-    if(data.round.over) return;
+  function processGuess(who, guess) {
+    if (data.round.over) return;
+  
     data.round.turn++;
     let result;
-    if(guess < data.round.answer){
+  
+    if (guess < data.round.answer) {
       result = "UP";
       data.round.low = Math.max(data.round.low, guess + 1);
-    } else if(guess > data.round.answer){
+    } else if (guess > data.round.answer) {
       result = "DOWN";
       data.round.high = Math.min(data.round.high, guess - 1);
     } else {
       result = "CORRECT";
     }
-
+  
     data.round.log.unshift(`${who}: ${guess} → ${result}`);
     save();
-
-    if(result === "CORRECT"){
+  
+    // Show result immediately
+    updateUI(`${who}: ${guess} → ${result}`);
+  
+    // If correct, end game immediately (countdown handles delay)
+    if (result === "CORRECT") {
       endGame(who);
       return;
     }
-
-    data.round.playerTurn = !data.round.playerTurn;
-    render(`${who}: ${guess} → ${result}`);
-
-    if(!data.round.playerTurn) computerGuess();
+  
+    // ⏱️ WAIT 2 seconds BEFORE continuing
+    guessInput.disabled = true;
+    submitBtn.disabled = true;
+  
+    setTimeout(() => {
+      data.round.playerTurn = !data.round.playerTurn;
+      save();
+      updateUI();
+  
+      if (!data.round.playerTurn) {
+        computerGuess();
+      }
+    }, POST_RESULT_DELAY);
   }
+
 
   function computerGuess(){
     if(data.round.low > data.round.high){
