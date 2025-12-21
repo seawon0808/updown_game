@@ -282,38 +282,40 @@
     data.round.log.unshift(`${who}: ${guess} → ${result}`);
     save();
   
-    // Show result immediately
+    // ✅ SHOW RESULT IMMEDIATELY
     updateUI(`${who}: ${guess} → ${result}`);
   
-    // If correct, end game immediately (countdown handles delay)
     if (result === "CORRECT") {
       endGame(who);
       return;
     }
   
-    // ⏱️ WAIT 2 seconds BEFORE continuing
+    // 🔒 lock input during reading time
     guessInput.disabled = true;
     submitBtn.disabled = true;
   
+    // ✅ TRUE 2-SECOND WAIT AFTER RESULT
     setTimeout(() => {
       data.round.playerTurn = !data.round.playerTurn;
+      guessInput.disabled = false;
+      submitBtn.disabled = false;
+  
       save();
       updateUI();
   
       if (!data.round.playerTurn) {
         computerGuess();
       }
-    }, POST_RESULT_DELAY);
+    }, 2000);
   }
 
 
-  function computerGuess(){
-    if(data.round.low > data.round.high){
-      data.round.low = 1; data.round.high = 100;
-    }
-    const guess = Math.floor((data.round.low + data.round.high)/2);
-    setTimeout(()=> processGuess("컴퓨터", guess), 700);
+
+  function computerGuess() {
+    const guess = Math.floor((data.round.low + data.round.high) / 2);
+    setTimeout(() => processGuess("컴퓨터", guess), 800);
   }
+
 
   // submit handler (parses input safely)
   function handleSubmit(){
