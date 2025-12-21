@@ -79,6 +79,7 @@ input:disabled {
   max-height:260px;
   overflow-y:auto;
   font-size:16px;
+  white-space:pre-wrap;
 }
 
 .score {
@@ -140,6 +141,17 @@ input:disabled {
 <script>
 const KEY = "updown_optimal_v1";
 
+/* DOM refs (fixed) */
+const pscore = document.getElementById('pscore');
+const cscore = document.getElementById('cscore');
+const turnPlayer = document.getElementById('turnPlayer');
+const turnCount = document.getElementById('turnCount');
+const message = document.getElementById('message');
+const guessInput = document.getElementById('guessInput');
+const submitBtn = document.getElementById('submitBtn');
+const roundLog = document.getElementById('roundLog');
+const gameLog = document.getElementById('gameLog');
+
 /* ---------- DATA ---------- */
 function newRound() {
   return {
@@ -155,7 +167,13 @@ function newRound() {
 
 function load() {
   const saved = localStorage.getItem(KEY);
-  if (saved) return JSON.parse(saved);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.warn("localStorage parse failed, resetting data");
+    }
+  }
   return {
     playerScore: 0,
     computerScore: 0,
@@ -165,6 +183,7 @@ function load() {
 }
 
 let data = load();
+let countdownInterval = null;
 
 function save() {
   localStorage.setItem(KEY, JSON.stringify(data));
@@ -181,11 +200,12 @@ function updateUI(msg="") {
   roundLog.innerHTML = data.round.log.map(x => `<div>${x}</div>`).join("");
   gameLog.innerHTML = data.games.map((g,i)=>`<div>게임 ${i+1}: ${g}</div>`).join("");
 
-  guessInput.disabled = data.round.over;
-  submitBtn.disabled = data.round.over;
+  // disable inputs while round is over (during countdown)
+  guessInput.disabled = !!data.round.over;
+  submitBtn.disabled = !!data.round.over;
 }
 
-/* ---------- GAME END ---------- */
+/* ---------- GAME END (with 5s countdown) ---------- */
 function endGame(winner) {
   if (winner === "보정고") data.playerScore++;
   else data.computerScore++;
@@ -196,13 +216,23 @@ function endGame(winner) {
 
   data.round.over = true;
   save();
-  updateUI(`🎉 ${winner} 정답! 5초 후 새 게임 시작`);
 
-  setTimeout(() => {
-    data.round = newRound();
-    save();
-    updateUI("새 게임 시작!");
-  }, 5000);
+  // Start a visible countdown from 5 down to 1
+  let remaining = 5;
+  updateUI(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
+  if (countdownInterval) clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining > 0) {
+      updateUI(`🎉 ${winner} 정답! ${remaining}초 후 새 게임 시작`);
+    } else {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      data.round = newRound();
+      save();
+      updateUI("새 게임 시작!");
+    }
+  }, 1000);
 }
 
 /* ---------- GUESS ---------- */
@@ -238,8 +268,14 @@ function processGuess(who, guess) {
 
 /* ---------- COMPUTER ---------- */
 function computerGuess() {
+  // safety: if low > high (shouldn't happen), reset range
+  if (data.round.low > data.round.high) {
+    data.round.low = 1;
+    data.round.high = 100;
+  }
   const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(() => processGuess("컴퓨터", guess), 2000);
+  // small delay so user can see the message
+  setTimeout(() => processGuess("컴퓨터", guess), 800);
 }
 
 /* ---------- INPUT ---------- */
@@ -256,14 +292,19 @@ submitBtn.onclick = () => {
   processGuess("보정고", num);
 };
 
-/* ---------- MULTI TAB ---------- */
+/* ---------- MULTI TAB SYNC ---------- */
 window.addEventListener("storage", e => {
   if (e.key === KEY && e.newValue) {
-    data = JSON.parse(e.newValue);
-    updateUI("🔄 다른 창과 동기화됨");
+    try {
+      data = JSON.parse(e.newValue);
+      updateUI("🔄 다른 창과 동기화됨");
+    } catch (err) {
+      console.warn("failed parsing storage event");
+    }
   }
 });
 
+/* initial render */
 updateUI("게임 시작!");
 </script>
 
