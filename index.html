@@ -1,220 +1,9 @@
-<!-- <!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>Up Down 게임 (최종 안정판)</title>
-<style>
-body {
-  font-family: system-ui, sans-serif;
-  background:#f6f7fb;
-  padding:20px;
-}
-.container {
-  max-width:540px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 10px 20px rgba(0,0,0,.08);
-}
-input, button {
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  font-size:16px;
-}
-button {
-  border-radius:8px;
-  border:1px solid #ccc;
-  background:#fafafa;
-  cursor:pointer;
-}
-.box {
-  background:#f1f1f1;
-  padding:8px;
-  border-radius:6px;
-  margin-top:10px;
-}
-.log {
-  margin-top:10px;
-  max-height:160px;
-  overflow-y:auto;
-  font-size:14px;
-}
-.score {
-  font-size:18px;
-  margin-top:8px;
-}
-.small {
-  font-size:13px;
-  color:#555;
-}
-</style>
-</head>
-<body>
-
-<div class="container">
-  <h2>Up Down 게임 (1~100)</h2>
-
-  <div class="score">
-    <b id="pscore">0</b> : <b id="cscore">0</b>
-  </div>
-  <div class="small">보정고 : 컴퓨터</div>
-
-  <div style="margin-top:8px">
-    현재 차례: <b id="turnPlayer"></b>
-  </div>
-  <div>턴 수: <b id="turnCount">0</b></div>
-
-  <div id="message" class="box"></div>
-
-  <input type="number" id="guessInput" placeholder="1~100 입력">
-  <button id="submitBtn">확인</button>
-
-  <h4>📜 현재 게임 로그</h4>
-  <div class="log" id="roundLog"></div>
-
-  <h4>📚 게임 기록</h4>
-  <div class="log" id="gameLog"></div>
-</div>
-
-<script>
-const KEY = "updown_optimal_v1";
-
-/* ---------- 데이터 로드 ---------- */
-function load() {
-  const saved = localStorage.getItem(KEY);
-  if (saved) return JSON.parse(saved);
-  return {
-    playerScore: 0,
-    computerScore: 0,
-    games: [],
-    round: newRound()
-  };
-}
-
-function newRound() {
-  return {
-    answer: Math.floor(Math.random()*100)+1,
-    low: 1,
-    high: 100,
-    turn: 0,
-    playerTurn: true,
-    log: [],
-    over: false
-  };
-}
-
-let data = load();
-
-/* ---------- 안전 저장 ---------- */
-function save() {
-  localStorage.setItem(KEY, JSON.stringify(data));
-}
-
-/* ---------- UI ---------- */
-function updateUI(msg="") {
-  document.getElementById("pscore").textContent = data.playerScore;
-  document.getElementById("cscore").textContent = data.computerScore;
-  document.getElementById("turnPlayer").textContent =
-    data.round.playerTurn ? "보정고" : "컴퓨터";
-  document.getElementById("turnCount").textContent = data.round.turn;
-  document.getElementById("message").textContent = msg;
-
-  document.getElementById("roundLog").innerHTML =
-    data.round.log.map(x=>`<div>${x}</div>`).join("");
-
-  document.getElementById("gameLog").innerHTML =
-    data.games.map((g,i)=>`<div>게임 ${i+1}: ${g}</div>`).join("");
-}
-
-/* ---------- 게임 로직 ---------- */
-function endGame(winner) {
-  if (winner === "보정고") data.playerScore++;
-  else data.computerScore++;
-
-  data.games.unshift(
-    `${winner} 승 (정답 ${data.round.answer}, ${data.round.turn}턴)`
-  );
-
-  data.round.over = true;
-  save();
-  updateUI(`🎉 ${winner} 정답!`);
-
-  setTimeout(() => {
-    data.round = newRound();
-    save();
-    updateUI("새 게임 시작!");
-  }, 5000);
-}
-
-function processGuess(who, guess) {
-  if (data.round.over) return;
-
-  data.round.turn++;
-  let result;
-
-  if (guess < data.round.answer) {
-    result = "UP";
-    data.round.low = Math.max(data.round.low, guess + 1);
-  } else if (guess > data.round.answer) {
-    result = "DOWN";
-    data.round.high = Math.min(data.round.high, guess - 1);
-  } else {
-    result = "CORRECT";
-  }
-
-  data.round.log.unshift(`${who}: ${guess} → ${result}`);
-
-  if (result === "CORRECT") {
-    endGame(who);
-    return;
-  }
-
-  data.round.playerTurn = !data.round.playerTurn;
-  save();
-  updateUI(`${who}: ${guess} → ${result}`);
-
-  if (!data.round.playerTurn) computerGuess();
-}
-
-function computerGuess() {
-  const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(()=>processGuess("컴퓨터", guess), 2000);
-}
-
-document.getElementById("submitBtn").onclick = () => {
-  if (!data.round.playerTurn) return;
-  const num = Number(guessInput.value);
-  guessInput.value = "";
-
-  if (!Number.isInteger(num) || num<1 || num>100) {
-    updateUI("❗ 1~100 사이 숫자만 입력");
-    return;
-  }
-  processGuess("보정고", num);
-};
-
-/* ---------- 멀티 창 동기화 ---------- */
-window.addEventListener("storage", e => {
-  if (e.key === KEY && e.newValue) {
-    data = JSON.parse(e.newValue);
-    <!--updateUI("🔄 다른 창과 동기화됨");-->
-  }
-});
-
-updateUI("게임 시작!");
-</script>
-
-</body>
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <title>Up Down 게임 (최종 안정판)</title>
+
 <style>
 body {
   font-family: system-ui, sans-serif;
@@ -223,15 +12,37 @@ body {
   font-size:18px;
 }
 
+/* MAIN CONTAINER */
 .container {
-  max-width:760px;              /* 🔼 bigger window */
+  max-width:1200px;
   margin:auto;
   background:white;
-  padding:32px;                 /* 🔼 more spacing */
+  padding:32px;
   border-radius:16px;
   box-shadow:0 15px 30px rgba(0,0,0,.1);
 }
 
+/* GRID LAYOUT */
+.grid {
+  display:grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap:32px;
+  margin-top:20px;
+}
+
+/* LEFT: GAME */
+.game {
+  display:flex;
+  flex-direction:column;
+}
+
+/* RIGHT: LOGS */
+.logs {
+  display:flex;
+  flex-direction:column;
+}
+
+/* INPUTS */
 input, button {
   width:100%;
   padding:14px;
@@ -252,22 +63,26 @@ input:disabled {
   cursor:not-allowed;
 }
 
+/* BOXES */
 .box {
   background:#f1f1f1;
-  padding:12px;
+  padding:14px;
   border-radius:8px;
   margin-top:12px;
 }
 
 .log {
-  margin-top:12px;
-  max-height:260px;            /* 🔼 taller logs */
+  background:#f6f6f6;
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:16px;
+  max-height:260px;
   overflow-y:auto;
   font-size:16px;
 }
 
 .score {
-  font-size:22px;
+  font-size:24px;
   margin-top:10px;
 }
 
@@ -275,50 +90,57 @@ input:disabled {
   font-size:14px;
   color:#555;
 }
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
+
 <body>
 
 <div class="container">
   <h2>Up Down 게임 (1~100)</h2>
 
-  <div class="score">
-    <b id="pscore">0</b> : <b id="cscore">0</b>
+  <div class="grid">
+
+    <!-- LEFT: GAME -->
+    <div class="game">
+      <div class="score">
+        <b id="pscore">0</b> : <b id="cscore">0</b>
+      </div>
+      <div class="small">보정고 : 컴퓨터</div>
+
+      <div style="margin-top:12px">
+        현재 차례: <b id="turnPlayer"></b>
+      </div>
+      <div>턴 수: <b id="turnCount">0</b></div>
+
+      <div id="message" class="box"></div>
+
+      <input type="number" id="guessInput" placeholder="1~100 입력">
+      <button id="submitBtn">확인</button>
+    </div>
+
+    <!-- RIGHT: LOGS -->
+    <div class="logs">
+      <h4>📜 현재 게임 로그</h4>
+      <div class="log" id="roundLog"></div>
+
+      <h4>📚 게임 기록</h4>
+      <div class="log" id="gameLog"></div>
+    </div>
+
   </div>
-  <div class="small">보정고 : 컴퓨터</div>
-
-  <div style="margin-top:10px">
-    현재 차례: <b id="turnPlayer"></b>
-  </div>
-  <div>턴 수: <b id="turnCount">0</b></div>
-
-  <div id="message" class="box"></div>
-
-  <input type="number" id="guessInput" placeholder="1~100 입력">
-  <button id="submitBtn">확인</button>
-
-  <h4>📜 현재 게임 로그</h4>
-  <div class="log" id="roundLog"></div>
-
-  <h4>📚 게임 기록</h4>
-  <div class="log" id="gameLog"></div>
 </div>
 
 <script>
 const KEY = "updown_optimal_v1";
 
-/* ---------- 데이터 로드 ---------- */
-function load() {
-  const saved = localStorage.getItem(KEY);
-  if (saved) return JSON.parse(saved);
-  return {
-    playerScore: 0,
-    computerScore: 0,
-    games: [],
-    round: newRound()
-  };
-}
-
+/* ---------- DATA ---------- */
 function newRound() {
   return {
     answer: Math.floor(Math.random()*100)+1,
@@ -331,9 +153,19 @@ function newRound() {
   };
 }
 
+function load() {
+  const saved = localStorage.getItem(KEY);
+  if (saved) return JSON.parse(saved);
+  return {
+    playerScore: 0,
+    computerScore: 0,
+    games: [],
+    round: newRound()
+  };
+}
+
 let data = load();
 
-/* ---------- 저장 ---------- */
 function save() {
   localStorage.setItem(KEY, JSON.stringify(data));
 }
@@ -342,22 +174,18 @@ function save() {
 function updateUI(msg="") {
   pscore.textContent = data.playerScore;
   cscore.textContent = data.computerScore;
-  turnPlayer.textContent =
-    data.round.playerTurn ? "보정고" : "컴퓨터";
+  turnPlayer.textContent = data.round.playerTurn ? "보정고" : "컴퓨터";
   turnCount.textContent = data.round.turn;
   message.textContent = msg;
 
-  roundLog.innerHTML =
-    data.round.log.map(x=>`<div>${x}</div>`).join("");
-
-  gameLog.innerHTML =
-    data.games.map((g,i)=>`<div>게임 ${i+1}: ${g}</div>`).join("");
+  roundLog.innerHTML = data.round.log.map(x => `<div>${x}</div>`).join("");
+  gameLog.innerHTML = data.games.map((g,i)=>`<div>게임 ${i+1}: ${g}</div>`).join("");
 
   guessInput.disabled = data.round.over;
   submitBtn.disabled = data.round.over;
 }
 
-/* ---------- 게임 종료 ---------- */
+/* ---------- GAME END ---------- */
 function endGame(winner) {
   if (winner === "보정고") data.playerScore++;
   else data.computerScore++;
@@ -374,10 +202,10 @@ function endGame(winner) {
     data.round = newRound();
     save();
     updateUI("새 게임 시작!");
-  }, 5000);                     /* ⏱️ exactly 5 seconds */
+  }, 5000);
 }
 
-/* ---------- 추측 처리 ---------- */
+/* ---------- GUESS ---------- */
 function processGuess(who, guess) {
   if (data.round.over) return;
 
@@ -408,26 +236,27 @@ function processGuess(who, guess) {
   if (!data.round.playerTurn) computerGuess();
 }
 
-/* ---------- 컴퓨터 ---------- */
+/* ---------- COMPUTER ---------- */
 function computerGuess() {
   const guess = Math.floor((data.round.low + data.round.high) / 2);
-  setTimeout(()=>processGuess("컴퓨터", guess), 2000);
+  setTimeout(() => processGuess("컴퓨터", guess), 2000);
 }
 
-/* ---------- 입력 ---------- */
+/* ---------- INPUT ---------- */
 submitBtn.onclick = () => {
   if (!data.round.playerTurn || data.round.over) return;
+
   const num = Number(guessInput.value);
   guessInput.value = "";
 
-  if (!Number.isInteger(num) || num<1 || num>100) {
+  if (!Number.isInteger(num) || num < 1 || num > 100) {
     updateUI("❗ 1~100 사이 숫자만 입력");
     return;
   }
   processGuess("보정고", num);
 };
 
-/* ---------- 멀티 창 ---------- */
+/* ---------- MULTI TAB ---------- */
 window.addEventListener("storage", e => {
   if (e.key === KEY && e.newValue) {
     data = JSON.parse(e.newValue);
